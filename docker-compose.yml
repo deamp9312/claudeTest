@@ -1,4 +1,22 @@
 services:
+  server1:
+    build:
+      context: .
+      dockerfile: server1/Dockerfile
+    container_name: server1
+    ports:
+      - "8080:8080"
+    depends_on:
+      - server2
+
+  server2:
+    build:
+      context: .
+      dockerfile: server2/Dockerfile
+    container_name: server2
+    ports:
+      - "8081:8080"
+
   mariadb:
     image: mariadb:11
     container_name: claude-mariadb
