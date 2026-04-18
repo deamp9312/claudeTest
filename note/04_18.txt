@@ -1,0 +1,30 @@
+로그 보기
+
+  # server1 로그 (실시간)
+  docker logs -f server1
+
+  # server2 로그 (실시간)
+  docker logs -f server2
+
+  # 둘 다 동시에 보려면 (터미널 2개 열거나)
+  docker logs -f server1 &
+  docker logs -f server2
+
+  ---
+  curl 요청
+
+  server1 → server2로 메시지 전달하는 흐름:
+
+  # server1에 POST 요청 (server1이 자동으로 server2로 포워딩)
+  curl -X POST "http://localhost:8080/api/send?message=hello"
+
+  server2 직접 테스트:
+  curl -X POST "http://localhost:8081/api/receive" \
+    -H "Content-Type: application/json" \
+    -d '"직접 테스트 메시지"'
+
+  ---
+  흐름 요약:
+  - localhost:8080 → server1 (/api/send)
+  - server1이 컨테이너 내부에서 server2:8080/api/receive로 포워딩
+  - localhost:8081 → server2 직접 접근
