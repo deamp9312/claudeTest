@@ -55,7 +55,7 @@ public class Step3_FullGcTrigger {
         for (int round = 0; round < 20; round++) {
             // 라운드마다 단기 객체 대량 생성 → Minor GC 유발
             for (int i = 0; i < 50_000; i++) {
-                new byte[256]; // 즉시 해제
+                byte[] ignored = new byte[256]; // 즉시 해제
             }
             // 일부는 계속 살려둠 → Survivor를 거쳐 Old Gen으로 이동
             oldGenResident.add(new byte[10 * 1024]); // 10KB
