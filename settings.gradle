@@ -1,2 +1,2 @@
 rootProject.name = 'claude'
-include 'server1', 'server2'
+include 'server1', 'server2', 'server3'

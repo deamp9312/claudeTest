@@ -2,10 +2,8 @@ package com.example.server1.thread;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 /**
  * [단계 6] Spring @Async - 스프링의 비동기 처리
@@ -70,20 +68,17 @@ public class Step6_SpringAsync {
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // @Async Future<T> - 레거시 방식 (Spring 4.x 호환성 목적)
-    //   - 새 코드에서는 CompletableFuture 사용 권장
-    //   - AsyncResult.forValue(): Spring이 제공하는 Future 구현체
+    // @Async CompletableFuture<T> - 주문 조회 비동기 메서드
     // ──────────────────────────────────────────────────────────────────────────
     @Async
-    public Future<String> fetchOrderAsync(String orderId) {
+    public CompletableFuture<String> fetchOrderAsync(String orderId) {
         log.info("  [fetchOrderAsync] 주문 조회: {} | 스레드: {}", orderId, Thread.currentThread().getName());
         try {
             Thread.sleep(300);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        // AsyncResult: Spring의 Future 구현체
-        return AsyncResult.forValue("Order{id=" + orderId + ", status=배송중}");
+        return CompletableFuture.completedFuture("Order{id=" + orderId + ", status=배송중}");
     }
 
     // ──────────────────────────────────────────────────────────────────────────

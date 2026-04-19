@@ -8,11 +8,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 /**
  * 멀티스레드 학습 컨트롤러
+ *  curl http://localhost:8080/thread/1
  *
  * 각 단계별 학습 API:
  *   GET /thread/1  → 기본 스레드 생성 (Thread, Runnable, Lambda)
@@ -21,6 +23,7 @@ import java.util.concurrent.ExecutionException;
  *   GET /thread/4  → Callable & Future (결과 반환)
  *   GET /thread/5  → CompletableFuture (비동기 파이프라인)
  *   GET /thread/6  → Spring @Async
+ *   GET /thread/7  → java.util.concurrent (Latch/Barrier/Semaphore/BlockingQueue/ConcurrentHashMap/ReadWriteLock)
  *   GET /thread/all → 모든 단계 순차 실행
  */
 @Slf4j
@@ -72,8 +75,7 @@ public class ThreadLearningController {
 
         // ② CompletableFuture 반환 - 체이닝 가능
         CompletableFuture<String> userFuture = step6SpringAsync.fetchUserDataAsync("user-123");
-        CompletableFuture<String> orderFuture = step6SpringAsync.fetchOrderAsync("order-456")
-                .toCompletableFuture(); // Future → CompletableFuture 변환
+        CompletableFuture<String> orderFuture = step6SpringAsync.fetchOrderAsync("order-456");
 
         // 두 비동기 작업 병렬 대기
         CompletableFuture.allOf(userFuture, orderFuture).join();
@@ -98,8 +100,14 @@ public class ThreadLearningController {
                 """.formatted(userData, orderData);
     }
 
+    @GetMapping("/7")
+    public String step7() throws InterruptedException, BrokenBarrierException {
+        log.info("=== API 호출: 단계7 - java.util.concurrent ===");
+        return Step7_ConcurrentPackage.run();
+    }
+
     @GetMapping("/all")
-    public String allSteps() throws InterruptedException, ExecutionException {
+    public String allSteps() throws InterruptedException, ExecutionException, BrokenBarrierException {
         log.info("=== API 호출: 전체 단계 실행 ===");
         StringBuilder sb = new StringBuilder();
         sb.append(Step1_BasicThread.run()).append("\n");
@@ -108,6 +116,7 @@ public class ThreadLearningController {
         sb.append(Step4_CallableFuture.run()).append("\n");
         sb.append(Step5_CompletableFuture.run()).append("\n");
         sb.append(step6()).append("\n");
+        sb.append(Step7_ConcurrentPackage.run()).append("\n");
         return sb.toString();
     }
 }
