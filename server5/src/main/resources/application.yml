@@ -1,0 +1,70 @@
+spring:
+  application:
+    name: server5-message-optimization
+
+  # H2 인메모리 DB (개발용)
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+        # ✅ JPA 최적화: 배치 INSERT/UPDATE
+        jdbc.batch_size: 50
+        order_inserts: true
+        order_updates: true
+        # ✅ 2차 캐시 비활성화 (Redis로 대체)
+        cache.use_second_level_cache: false
+
+  # Redis 설정
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 5
+          min-idle: 2
+
+  # Kafka 설정
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      # ✅ 메시지 압축: snappy (CPU 효율적) / lz4 (속도 우선) / gzip (압축률 우선)
+      compression-type: lz4
+      # ✅ 배치 전송: 16KB 모일 때까지 대기
+      batch-size: 16384
+      # ✅ 최대 1ms 대기 후 배치 전송
+      properties:
+        linger.ms: 1
+        # ✅ 재시도 설정
+        retries: 3
+        retry.backoff.ms: 100
+        # ✅ 멱등성 보장 (exactly-once)
+        enable.idempotence: true
+      acks: all
+    consumer:
+      group-id: server5-group
+      auto-offset-reset: earliest
+      # ✅ 한 번에 가져오는 최대 레코드 수
+      max-poll-records: 100
+      properties:
+        # ✅ 페치 최소 크기 (1KB 이상 쌓일 때까지 대기)
+        fetch.min.bytes: 1024
+        fetch.max.wait.ms: 500
+    topics:
+      order-events: order-events
+      user-events: user-events
